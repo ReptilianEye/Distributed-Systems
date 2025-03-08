@@ -128,7 +128,7 @@ func forwardToOthersUDP(senderAddr *net.UDPAddr, message []byte, otherClients ma
 func retrievePort(conn net.Conn) int {
 	var port int
 	remoteAddr := conn.RemoteAddr().String()
-	_, err := fmt.Sscanf(remoteAddr, "[::1]:%d", &port)
+	_, err := fmt.Sscanf(remoteAddr, "127.0.0.1:%d", &port)
 	if err != nil {
 		fmt.Println("Failed to extract port from remote address:", err)
 		return 0

@@ -16,7 +16,7 @@ const multicastAddr = "224.0.0.1:12345"
 
 func main() {
 	// Connect to the server
-	tcpConn, err := net.Dial("tcp", "localhost:8080")
+	tcpConn, err := net.Dial("tcp", "127.0.0.1:8080")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -24,7 +24,7 @@ func main() {
 	defer tcpConn.Close()
 
 	var tcpPort int
-	_, err = fmt.Sscanf(tcpConn.LocalAddr().String(), "[::1]:%d", &tcpPort)
+	_, err = fmt.Sscanf(tcpConn.LocalAddr().String(), "127.0.0.1:%d", &tcpPort)
 	if err != nil {
 		fmt.Println("Failed to extract port from remote address:", err)
 		tcpConn.Close()
