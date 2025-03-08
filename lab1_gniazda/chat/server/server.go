@@ -29,7 +29,6 @@ func main() {
 	defer udpListenConn.Close()
 	go handleUDPConnection(udpListenConn, clients)
 
-	// Accept incoming connections and handle them
 	for {
 		tcpConn, err := ln.Accept()
 		if err != nil {
@@ -53,7 +52,6 @@ func main() {
 		clients[nickname] = tcpConn
 		fmt.Printf("New client: %s\n", nickname)
 
-		// Handle the connection in a new goroutine
 		go handleTCPConnection(tcpConn, nickname, clients)
 	}
 }

@@ -15,8 +15,7 @@ const addr = "127.0.0.1"
 const multicastAddr = "224.0.0.1:12345"
 
 func main() {
-	// Connect to the server
-	tcpConn, err := net.Dial("tcp", "127.0.0.1:8080")
+	tcpConn, err := net.Dial("tcp", addr+":8080")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -34,8 +33,8 @@ func main() {
 
 	udpSend, err := net.DialUDP(
 		"udp",
-		&net.UDPAddr{Port: tcpPort, IP: nil},
-		&net.UDPAddr{Port: 8080, IP: nil},
+		&net.UDPAddr{Port: tcpPort},
+		&net.UDPAddr{Port: 8080},
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -44,7 +43,7 @@ func main() {
 
 	defer udpSend.Close()
 
-	udpListen, err := net.ListenUDP("udp", &net.UDPAddr{Port: tcpPort + 1, IP: nil})
+	udpListen, err := net.ListenUDP("udp", &net.UDPAddr{Port: tcpPort + 1})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,6 +67,7 @@ func main() {
 	go handleIncomingMessagesTCP(tcpConn)
 	go handleIncomingMessagesUDP(udpListen)
 	go handleIncomingMessagesUDP(multicastListen)
+
 	// Authenticate
 	nickname := fmt.Sprintf("client%d", rand.Intn(1000))
 	fmt.Printf("Your nickname is: %s\n", nickname)
@@ -128,7 +128,6 @@ func handleIncomingMessagesTCP(conn net.Conn) {
 
 func handleIncomingMessagesUDP(conn *net.UDPConn) {
 	for {
-		// Read incoming data
 		message := make([]byte, buffSize)
 		_, _, err := conn.ReadFromUDP(message)
 		if err != nil {
@@ -136,7 +135,6 @@ func handleIncomingMessagesUDP(conn *net.UDPConn) {
 			log.Fatal("Server closed the connection")
 			return
 		}
-		// Print the incoming data
 		fmt.Println("(UDP)", string(message))
 	}
 }
