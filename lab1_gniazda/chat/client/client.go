@@ -21,6 +21,8 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	defer tcpConn.Close()
+
 	var tcpPort int
 	_, err = fmt.Sscanf(tcpConn.LocalAddr().String(), "[::1]:%d", &tcpPort)
 	if err != nil {
@@ -28,20 +30,44 @@ func main() {
 		tcpConn.Close()
 		return
 	}
-	defer tcpConn.Close()
+	fmt.Printf("Client TCP runs on port %d\n", tcpPort)
 
-	udpConn, err := net.DialUDP(
+	udpSend, err := net.DialUDP(
 		"udp",
-		&net.UDPAddr{Port: tcpPort + 1, IP: net.ParseIP(addr)},
-		&net.UDPAddr{Port: 8080, IP: net.ParseIP(addr)},
+		&net.UDPAddr{Port: tcpPort, IP: nil},
+		&net.UDPAddr{Port: 8080, IP: nil},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer udpConn.Close()
+	fmt.Println("Client UDP runs on port", tcpPort+1)
+
+	defer udpSend.Close()
+
+	udpListen, err := net.ListenUDP("udp", &net.UDPAddr{Port: tcpPort + 1, IP: nil})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer udpListen.Close()
+
+	multicastAddr, err := net.ResolveUDPAddr("udp", multicastAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	multicastListen, err := net.ListenMulticastUDP(
+		"udp",
+		nil,
+		multicastAddr,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer multicastListen.Close()
 
 	go handleIncomingMessagesTCP(tcpConn)
-	go handleIncomingMessagesUDP(tcpPort)
+	go handleIncomingMessagesUDP(udpListen)
+	go handleIncomingMessagesUDP(multicastListen)
 	// Authenticate
 	nickname := fmt.Sprintf("client%d", rand.Intn(1000))
 	fmt.Printf("Your nickname is: %s\n", nickname)
@@ -60,7 +86,19 @@ func main() {
 		}
 		switch {
 		case strings.HasPrefix(string(message), "U "):
-			_, err = udpConn.Write(message)
+			_, err = udpSend.Write(message)
+		case strings.HasPrefix(string(message), "M "):
+			c, err := net.DialUDP(
+				"udp",
+				nil,
+				multicastAddr,
+			)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			_, err = c.Write(message)
+
 		default:
 			_, err = tcpConn.Write(message)
 			if err != nil {
@@ -88,17 +126,7 @@ func handleIncomingMessagesTCP(conn net.Conn) {
 	}
 }
 
-func handleIncomingMessagesUDP(port int) {
-	addr := net.UDPAddr{
-		Port: port,
-		IP:   net.ParseIP(addr),
-	}
-	conn, err := net.ListenUDP("udp", &addr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
-	fmt.Println("Listening for UDP messages on port", port)
+func handleIncomingMessagesUDP(conn *net.UDPConn) {
 	for {
 		// Read incoming data
 		message := make([]byte, buffSize)

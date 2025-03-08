@@ -8,12 +8,6 @@ import (
 
 const buffSize = 4096
 const port = 8080
-const addr = "127.0.0.1"
-
-type conns struct {
-	tcp net.Conn
-	udp *net.UDPConn
-}
 
 func main() {
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
@@ -24,15 +18,16 @@ func main() {
 
 	udpAddr := net.UDPAddr{
 		Port: port,
-		IP:   net.ParseIP(addr),
+		IP:   nil,
 	}
 
-	var clients = make(map[string]conns)
-	conn, err := net.ListenUDP("udp", &udpAddr)
+	var clients = make(map[string]net.Conn)
+	udpListenConn, err := net.ListenUDP("udp", &udpAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
+	defer udpListenConn.Close()
+	go handleUDPConnection(udpListenConn, clients)
 
 	// Accept incoming connections and handle them
 	for {
@@ -46,22 +41,6 @@ func main() {
 			tcpConn.Close()
 			continue
 		}
-		remoteAddr := tcpConn.RemoteAddr().String()
-		var remotePort int
-		_, err = fmt.Sscanf(remoteAddr, "[::1]:%d", &remotePort)
-		if err != nil {
-			fmt.Println("Failed to extract port from remote address:", err)
-			tcpConn.Close()
-			continue
-		}
-		udpConn, err := net.DialUDP("udp", nil, &net.UDPAddr{
-			Port: remotePort,
-			IP:   net.ParseIP(addr),
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer udpConn.Close()
 
 		// Authenticate client
 		nicknameByte := make([]byte, buffSize)
@@ -71,20 +50,16 @@ func main() {
 			continue
 		}
 		nickname := string(nicknameByte)
-		clients[nickname] = conns{tcpConn, udpConn}
+		clients[nickname] = tcpConn
 		fmt.Printf("New client: %s\n", nickname)
 
 		// Handle the connection in a new goroutine
-		go handleUDPConnection(conn, nickname, clients)
 		go handleTCPConnection(tcpConn, nickname, clients)
 	}
 }
 
-func handleTCPConnection(conn net.Conn, clientNick string, otherClients map[string]conns) {
-	// Close the connection when we're done
-	defer conn.Close()
+func handleTCPConnection(conn net.Conn, clientNick string, otherClients map[string]net.Conn) {
 	for {
-		// Read incoming data
 		message := make([]byte, buffSize)
 		_, err := conn.Read(message)
 		if err != nil {
@@ -92,11 +67,11 @@ func handleTCPConnection(conn net.Conn, clientNick string, otherClients map[stri
 			delete(otherClients, clientNick)
 			return
 		}
-		sendToAllOthersTCP(clientNick, message, otherClients)
+		forwardToOthersTCP(clientNick, message, otherClients)
 	}
 }
 
-func handleUDPConnection(conn *net.UDPConn, clientNick string, otherClients map[string]conns) {
+func handleUDPConnection(conn *net.UDPConn, otherClients map[string]net.Conn) {
 	for {
 		message := make([]byte, buffSize)
 		_, addr, err := conn.ReadFromUDP(message)
@@ -105,14 +80,14 @@ func handleUDPConnection(conn *net.UDPConn, clientNick string, otherClients map[
 			return
 		}
 		fmt.Printf("Received message from UDP %s: %s\n", addr, message)
-		sendToAllOthersUDP(clientNick, message, otherClients)
+		forwardToOthersUDP(addr, message, otherClients)
 	}
 }
-func sendToAllOthersTCP(nickname string, message []byte, otherClients map[string]conns) {
+func forwardToOthersTCP(sender string, message []byte, otherClients map[string]net.Conn) {
 	for nick, conn := range otherClients {
-		if nick != nickname {
-			mess := []byte(nickname + ": " + string(message))
-			_, err := conn.tcp.Write(mess)
+		if nick != sender {
+			mess := []byte(sender + ": " + string(message))
+			_, err := conn.Write(mess)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -120,15 +95,43 @@ func sendToAllOthersTCP(nickname string, message []byte, otherClients map[string
 	}
 }
 
-func sendToAllOthersUDP(nickname string, message []byte, otherClients map[string]conns) {
+func forwardToOthersUDP(senderAddr *net.UDPAddr, message []byte, otherClients map[string]net.Conn) {
+	udpConn := func(tcpConn net.Conn) *net.UDPConn {
+		udpConn, err := net.DialUDP("udp", nil, &net.UDPAddr{
+			Port: retrievePort(tcpConn) + 1,
+			IP:   nil,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		return udpConn
+	}
+	var sender string
 	for nick, conn := range otherClients {
-		if nick != nickname {
-			mess := []byte(nickname + ": " + string(message))
-			_, err := conn.udp.Write(mess)
+		if retrievePort(conn) == senderAddr.Port {
+			sender = nick
+			break
+		}
+	}
+	for _, conn := range otherClients {
+		udpConn := udpConn(conn)
+		if retrievePort(conn) != senderAddr.Port {
+			_, err := udpConn.Write([]byte(sender + ": " + string(message)))
 			if err != nil {
 				fmt.Println(err)
 			}
-
 		}
+		udpConn.Close()
 	}
+}
+
+func retrievePort(conn net.Conn) int {
+	var port int
+	remoteAddr := conn.RemoteAddr().String()
+	_, err := fmt.Sscanf(remoteAddr, "[::1]:%d", &port)
+	if err != nil {
+		fmt.Println("Failed to extract port from remote address:", err)
+		return 0
+	}
+	return port
 }
