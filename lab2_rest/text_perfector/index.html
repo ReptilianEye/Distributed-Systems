@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Playground</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+
+<body>
+    <h1 class="text-3xl font-bold">Text Playground</h1>
+    <div class="flex p-4">
+        <div class="flex flex-row flex-1">
+            <div class="flex-1">
+                <form hx-post="/process-text" hx-target="#output">
+                    <button hx-post="/clicked" hx-target="#clicker">Click</button>
+                    <div class="flex-col">
+                        <div class="flex-1"></div>
+                        <textarea id="input-text" name="input-text" rows="10" cols="50">{{.Text}}</textarea>
+
+                        <div class="flex-1">
+                            <label for="remove-newline">Remove Newline:</label>
+                            <input type="checkbox" id="remove-newline" name="remove-newline">
+                        </div>
+                        <div class="flex-1">
+                            <label for="remove-space">Remove Space:</label>
+                            <input type="checkbox" id="remove-space" name="remove-space">
+                        </div>
+                        <div class="flex-1">
+                            <label for="remove-tab">Remove Tab:</label>
+                            <input type="checkbox" id="remove-tab" name="remove-tab">
+                        </div>
+                        <div class="flex-1">
+                            <label for="remove-special">Remove Special:</label>
+                            <input type="checkbox" id="remove-special" name="remove-special">
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Process</button>
+                </form>
+            </div>
+            <div class="flex-1"><label for="input-text">Input Text:</label>
+                <div id="clicker">Not clicked</div>
+                <div>
+                    <h1>Found words (click to found synonyms)</h1>
+                    <div class="flex flex-col">
+                        {{range .Words}}
+                        <!-- <li class="flex items-center"> -->
+                        <div>
+                            <button hx-post="/clicked?word={{.}}" hx-target="#output" hx-swap="beforeend"> {{.}}</button>
+                        </div>
+                        <!-- </li> -->
+                        {{end}}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1">
+            <h2>Outputs</h2>
+            <ul id="output" class="flex flex-row">
+                {{range .Outputs}} {{block "output-list-element" .}}
+                <li class="flex-1 border border-gray-300 p-2">
+                    <h3>{{.Title}}</h3>
+                    <p>{{.Results}}</p>
+                </li>
+                {{end}} {{end}}
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>
