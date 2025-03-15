@@ -6,9 +6,12 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/joho/godotenv"
+	"github.com/thoas/go-funk"
 )
 
 // words api
@@ -21,9 +24,13 @@ import (
 //fun translations
 // https://api.funtranslations.com/
 
+// tutorial
+// https://www.youtube.com/watch?v=F9H6vYelYyU
+
 type Output struct {
-	Title   string
-	Results any
+	Title       string
+	Synonyms    []string
+	Definitions []string
 }
 
 var outputs []Output
@@ -31,9 +38,22 @@ var outputs []Output
 func getData(sentence string) map[string]any {
 	return map[string]any{
 		"Text":    sentence,
-		"Words":   strings.Split(strings.ReplaceAll(sentence, ",", " "), " "),
+		"Words":   tokenizeSentence(sentence),
 		"Outputs": outputs,
 	}
+}
+func tokenizeSentence(sentence string) []string {
+	re := regexp.MustCompile(`[^a-zA-Z]+`)
+	words := re.Split(sentence, -1)
+	words = funk.Uniq(words).([]string)
+	words = funk.FilterString(words, func(word string) bool {
+		return len(word) > 3
+	})
+	words = funk.Map(words, func(word string) string {
+		return strings.ToLower(word)
+	}).([]string)
+	slices.Sort(words)
+	return words
 }
 
 var currentSentence = `No man is an island,
@@ -55,11 +75,16 @@ func main() {
 		templ.Execute(w, getData(currentSentence))
 	}
 	make_query := func(w http.ResponseWriter, r *http.Request) {
-		wordsApi := apis.WordApi{}
 		word := r.URL.Query()["word"][0]
-		fmt.Println("looking for synonym for", word)
-		words := wordsApi.ListSynonyms(word)
-		newOutput := Output{Title: fmt.Sprintf("Synonyms for '%s'", word), Results: words}
+		fmt.Println("Looking for synonym for", word)
+		synonymsList := apis.ListSynonyms(word)
+		fmt.Println("Looking for definition for", word)
+		definitions := apis.GetDefinition(word)
+		newOutput := Output{
+			Title:       fmt.Sprintf("Query for word: '%s'", word),
+			Synonyms:    synonymsList[:min(3, len(synonymsList))],
+			Definitions: definitions[:min(3, len(definitions))],
+		}
 		outputs = append(
 			outputs,
 			newOutput,
