@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"example/text-perfector/v2/apis"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
@@ -136,6 +138,99 @@ func main() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/word-query", makeWordQuery)
 	http.HandleFunc("/text-query", makeTextQuery)
+
+	http.HandleFunc("/api/word-query", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			return
+		}
+		apiKey := r.Header.Get("x-api-Key")
+		if apiKey != os.Getenv("api_key") {
+			http.Error(w, "API key is missing", http.StatusUnauthorized)
+			return
+		}
+
+		word := r.URL.Query()["word"][0]
+		synonymsChan := make(chan []string)
+		definitionsChan := make(chan []string)
+		go func() {
+			fmt.Println("Looking for synonym for", word)
+			synonymsChan <- apis.ListSynonyms(word)
+		}()
+		go func() {
+			fmt.Println("Looking for definition for", word)
+			definitionsChan <- apis.GetDefinition(word)
+		}()
+		synonyms := <-synonymsChan
+		definitions := <-definitionsChan
+		type Output struct {
+			Synonyms    []string `json:"synonyms"`
+			Definitions []string `json:"definitions"`
+		}
+		newOutput := Output{
+			Synonyms:    synonyms[:min(3, len(synonyms))],
+			Definitions: definitions[:min(3, len(definitions))],
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(newOutput)
+	})
+
+	http.HandleFunc("/api/text-query", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			return
+		}
+		apiKey := r.Header.Get("x-api-Key")
+		if apiKey != os.Getenv("api_key") {
+			http.Error(w, "API key is missing", http.StatusUnauthorized)
+			return
+		}
+
+		var requestBody struct {
+			Text           string `json:"input-text"`
+			RemoveBadWords bool   `json:"remove-badwords"`
+			Punctuation    bool   `json:"punctuation"`
+			DetectLanguage bool   `json:"detect-language"`
+			StripTags      bool   `json:"strip-tags"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		models := []apis.SafeTextModel{}
+		if requestBody.RemoveBadWords {
+			models = append(models, apis.RemoveBadWords)
+		}
+		if requestBody.Punctuation {
+			models = append(models, apis.Punctuation)
+		}
+		if requestBody.DetectLanguage {
+			models = append(models, apis.DetectLanguage)
+		}
+		if requestBody.StripTags {
+			models = append(models, apis.StripTags)
+		}
+		text := requestBody.Text
+		cleanedText, language := apis.CleanText(text, models)
+		fmt.Println("Cleaned text:", cleanedText)
+		fmt.Println("Language:", language)
+		type Output struct {
+			CleanedText *string `json:"cleaned_text"`
+			Language    *string `json:"language"`
+		}
+
+		newOutput := Output{
+			CleanedText: &cleanedText,
+			Language:    language,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(newOutput)
+	})
 
 	// http.HandleFunc("/add-todo", addTodo)
 	fmt.Println("Server is running on port 4000: http://localhost:4000")
