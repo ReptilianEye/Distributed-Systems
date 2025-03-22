@@ -15,37 +15,38 @@
     <div class="flex p-4">
         <div class="flex flex-row flex-1">
             <div class="flex-1">
-                <form hx-post="/process-text" hx-target="#output">
+                <form hx-post="/text-query" hx-target="#output" hx-swap="beforeend">
                     <div class="flex-col">
                         <div class="flex-1"></div>
+                        <label for="input-text">Text to analyze:</label>
                         <textarea id="input-text" name="input-text" rows="10" cols="35">{{.Text}}</textarea>
 
                         <div class="flex-1">
-                            <label for="remove-newline">Remove Newline:</label>
-                            <input type="checkbox" id="remove-newline" name="remove-newline">
+                            <label for="remove-badwords">Remove Bad Words:</label>
+                            <input type="checkbox" id="remove-badwords" name="remove-badwords">
                         </div>
                         <div class="flex-1">
-                            <label for="remove-space">Remove Space:</label>
-                            <input type="checkbox" id="remove-space" name="remove-space">
+                            <label for="punctuation">Punctuation:</label>
+                            <input type="checkbox" id="punctuation" name="punctuation">
                         </div>
                         <div class="flex-1">
-                            <label for="remove-tab">Remove Tab:</label>
-                            <input type="checkbox" id="remove-tab" name="remove-tab">
+                            <label for="detect-language">Detect Language:</label>
+                            <input type="checkbox" id="detect-language" name="detect-language">
                         </div>
                         <div class="flex-1">
-                            <label for="remove-special">Remove Special:</label>
-                            <input type="checkbox" id="remove-special" name="remove-special">
+                            <label for="strip-tags">Strip HTML Tags:</label>
+                            <input type="checkbox" id="strip-tags" name="strip-tags">
                         </div>
                     </div>
                     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Process</button>
                 </form>
             </div>
-            <div class="flex-1"><label for="input-text">Input Text:</label>
+            <div class="flex-1">
                 <div>
                     <h1>Found words (click to found synonyms)</h1>
                     <div class="flex flex-col">
                         {{range .Words}}
-                        <button class="bg-gray-200 hover:bg-gray-400 text-black font-bold py-1 px-2 rounded mt-1" hx-post="/clicked?word={{.}}"
+                        <button class="bg-gray-200 hover:bg-gray-400 text-black font-bold py-1 px-2 rounded mt-1" hx-post="/word-query?word={{.}}"
                             hx-target="#output" hx-swap="beforeend"> {{.}}</button>
                         {{end}}
 
@@ -59,18 +60,30 @@
                 {{range .Outputs}} {{block "output-list-element" .}}
                 <div class="flex-1 border border-gray-300 p-2">
                     <h3>{{.Title}}</h3>
+                    {{if .Definitions}}
                     <h3>Definitions:</h3>
                     <ul>
                         {{range .Definitions}}
                         <li>{{.}}</li>
                         {{end}}
                     </ul>
+                    {{end}}
+                    {{if .Synonyms}}
                     <h3>Synonyms:</h3>
                     <ul>
                         {{range .Synonyms}}
                         <li>{{.}}</li>
                         {{end}}
                     </ul>
+                    {{end}}
+                    {{if .CleanedText}}
+                    <h3>Cleaned Text:</h3>
+                    <div>{{.CleanedText}}</div>
+                    {{end}}
+                    {{if .Language}}
+                    <h3>Language:</h3>
+                    <div>{{.Language}}</div>
+                    {{end}}
                 </div>
                 {{end}} {{end}}
             </ul>
