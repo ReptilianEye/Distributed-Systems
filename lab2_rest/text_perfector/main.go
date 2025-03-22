@@ -29,6 +29,8 @@ import (
 // tutorial
 // https://www.youtube.com/watch?v=F9H6vYelYyU
 
+// Postman collection: https://web.postman.co/workspace/Text-App~25f9c420-1881-48ff-9cbb-1f5112f7f870/request/27741934-4e28d433-ed24-443c-b32c-34c54c58284d?tab=headers
+
 type Output struct {
 	Title       string
 	Synonyms    []string
@@ -232,7 +234,6 @@ func main() {
 		json.NewEncoder(w).Encode(newOutput)
 	})
 
-	// http.HandleFunc("/add-todo", addTodo)
 	fmt.Println("Server is running on port 4000: http://localhost:4000")
 	log.Fatal(http.ListenAndServe(":4000", logRequest(http.DefaultServeMux)))
 
