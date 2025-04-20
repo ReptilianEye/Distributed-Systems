@@ -12,5 +12,13 @@ class CalculatorI(Calculations.Calculator):
     def multiply(self, a, b, current:Ice.Current):
         return a * b
     
-    def dynamichello(self,name, current:Ice.Current):
+    def hello(self, name, current:Ice.Current):
         return "you found me: " + name
+
+    def mean(self, *vals):
+        vals = list(vals)[:-1]
+        return sum(*vals) / len(*vals)
+    
+    def increment(self, val, current:Ice.Current):
+        return val + 1
+    

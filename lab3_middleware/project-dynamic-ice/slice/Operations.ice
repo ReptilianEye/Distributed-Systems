@@ -2,6 +2,8 @@
 
 module Calculations
 {
+    sequence<int> Seq;
+
     /// Represents a simple calculator.
     interface Calculator
     {
@@ -23,7 +25,13 @@ module Calculations
         /// @return The product of a and b.
         int multiply(int a, int b);
 
-        string dynamichello(string name);
-    }
+        string hello(string name);
+    
+
+        double mean(Seq seq);
+
+        int increment(int a);
+
+        }
 
 }

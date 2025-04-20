@@ -5,6 +5,6 @@ import Ice
 Ice.updateModule("Calculations")
 
 # Modules:
-import operations_ice
+import Operations_ice
 
 # Submodules:
