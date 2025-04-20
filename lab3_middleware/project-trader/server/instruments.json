@@ -1,0 +1,32 @@
+[
+  {
+    "symbol": "BTCUSD",
+    "price": 30000.5,
+    "type": "CRYPTOCURRENCY",
+    "base_currency": "USD"
+  },
+  {
+    "symbol": "ETHUSD",
+    "price": 2000.75,
+    "type": "CRYPTOCURRENCY",
+    "base_currency": "USD"
+  },
+  {
+    "symbol": "EURUSD",
+    "price": 4.5,
+    "type": "CURRENCY",
+    "base_currency": "USD"
+  },
+  {
+    "symbol": "GOLD",
+    "price": 1950.1,
+    "type": "COMMODITY",
+    "base_currency": "USD"
+  },
+  {
+    "symbol": "PLNEUR",
+    "price": 4.5,
+    "type": "CURRENCY",
+    "base_currency": "PLN"
+  }
+]

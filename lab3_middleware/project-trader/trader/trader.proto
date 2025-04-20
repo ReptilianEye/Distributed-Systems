@@ -1,0 +1,48 @@
+
+syntax = "proto3";
+
+option go_package = "example/trading-app/v2/trader";
+
+package trader;
+
+
+service Trader {
+    rpc GetOffers(Filter) returns (OfferList) {}
+    rpc Subscribe(Subscription) returns (stream OfferList) {}
+};
+
+message Filter {
+    InstrumentType type = 1;
+    Currency currency = 2;
+    double maxPrice = 3;
+}
+
+message OfferList {
+    repeated Offer offers = 1;
+}
+
+enum InstrumentType {
+    CURRENCY = 0;
+    CRYPTOCURRENCY = 1;
+    COMMODITY = 2;
+}
+enum Currency {
+    USD = 0;
+    EUR = 1;
+    PLN = 2;
+}
+
+message Offer {
+    InstrumentType type = 1;
+    string symbol = 2;
+    double currentPrice = 3;
+    Currency baseCurrency = 4;
+};
+message Subscription {
+    repeated string symbols = 1;
+};
+
+message Rate {
+    string symbol = 1;
+    double price = 2;
+};
