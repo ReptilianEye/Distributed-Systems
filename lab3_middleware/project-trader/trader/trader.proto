@@ -41,8 +41,3 @@ message Offer {
 message Subscription {
     repeated string symbols = 1;
 };
-
-message Rate {
-    string symbol = 1;
-    double price = 2;
-};
