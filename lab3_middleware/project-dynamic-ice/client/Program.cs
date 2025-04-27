@@ -29,17 +29,15 @@ namespace Client
                     inParams = outStream.finished();
                     if (calculator.ice_invoke("hello", Ice.OperationMode.Normal, inParams, out outParams))
                     {
-
-                        // Handle success
                         Ice.InputStream inStream = new(communicator, outParams);
                         inStream.startEncapsulation();
                         string result = inStream.readString();
                         inStream.endEncapsulation();
-                        Console.WriteLine(result); // Handle user exception
+                        Console.WriteLine(result);
                     }
                     else
                     {
-                        Console.WriteLine("Dynamic hello invocation failed.");
+                        Console.WriteLine("Dynamic 'hello' invocation failed.");
                     }
                     outStream.reset();
                     outStream.startEncapsulation();
@@ -54,11 +52,11 @@ namespace Client
                         inStream.startEncapsulation();
                         double result = inStream.readDouble();
                         inStream.endEncapsulation();
-                        Console.WriteLine(result); // Handle user exception
+                        Console.WriteLine(result);
                     }
                     else
                     {
-                        Console.WriteLine("Dynamic hello invocation failed.");
+                        Console.WriteLine("Dynamic 'mean' invocation failed.");
                     }
                     outStream.reset();
                     outStream.startEncapsulation();
@@ -68,16 +66,15 @@ namespace Client
                     if (calculator.ice_invoke("increment", Ice.OperationMode.Normal, inParams, out outParams))
                     {
 
-                        // Handle success
                         Ice.InputStream inStream = new(communicator, outParams);
                         inStream.startEncapsulation();
                         double result = inStream.readInt();
                         inStream.endEncapsulation();
-                        Console.WriteLine(result); // Handle user exception
+                        Console.WriteLine(result);
                     }
                     else
                     {
-                        Console.WriteLine("Dynamic hello invocation failed.");
+                        Console.WriteLine("Dynamic 'increment' invocation failed.");
                     }
 
                 }

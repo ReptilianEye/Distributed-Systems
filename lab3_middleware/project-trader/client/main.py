@@ -47,7 +47,6 @@ def subscribe(stub, subscribe_to: list[str]):
                     inbox[offer.symbol].append(offer.currentPrice)
                     inbox[offer.symbol] = inbox[offer.symbol][-5:]  # Keep only the last 5 notifications
 
-                # print(f"Updated inbox: {inbox}")
         except grpc.RpcError as e:
             if e.code() == grpc.StatusCode.CANCELLED:
                 print("Subscription cancelled")
@@ -60,6 +59,13 @@ def subscribe(stub, subscribe_to: list[str]):
     return thread
 
 
+client_dialog = """
+Instructions:
+1. 'list' to list offers
+2. 'subscribe' to subscribe to offers
+3. 'read' to read notifications
+4. 'exit' to exit
+> """
 def run():
     global subscription_thread, stop_event
 
@@ -111,13 +117,6 @@ def run():
                 continue
 
 
-client_dialog = """
-Instructions:
-1. 'list' to list offers
-2. 'subscribe' to subscribe to offers
-3. 'read' to read notifications
-4. 'exit' to exit
-> """
 
 if __name__ == '__main__':
     run()

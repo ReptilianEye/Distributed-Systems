@@ -29,7 +29,7 @@ func RunSimulation() {
 			offer.CurrentPrice = math.Max(
 				0,
 				offer.CurrentPrice,
-			) // Ensure price doesn't go negative
+			)
 		}
 		time.Sleep(
 			time.Duration(rand.IntN(5)) * time.Second,
