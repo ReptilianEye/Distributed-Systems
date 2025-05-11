@@ -26,7 +26,6 @@ module Calculations
         int multiply(int a, int b);
 
         string hello(string name);
-    
 
         double mean(Seq seq);
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using Calculations;
+// using Calculations;
 
 namespace Client
 {
@@ -12,14 +12,14 @@ namespace Client
                 using (Ice.Communicator communicator = Ice.Util.initialize(ref args))
                 {
                     var obj = communicator.stringToProxy("calculator:default -h localhost -p 4061");
-                    var calculator = CalculatorPrxHelper.checkedCast(obj);
-                    if (calculator == null)
-                    {
-                        throw new ApplicationException("Invalid proxy");
-                    }
+                    // var calculator = CalculatorPrxHelper.checkedCast(obj);
+                    // if (calculator == null)
+                    // {
+                    //     throw new ApplicationException("Invalid proxy");
+                    // }
 
-                    calculator.add(1, 2);
-                    Console.WriteLine("Addition result: " + calculator.add(1, 2));
+                    // calculator.add(1, 2);
+                    // Console.WriteLine("Addition result: " + calculator.add(1, 2));
                     Ice.OutputStream outStream = new(communicator);
                     byte[] inParams = [];
                     byte[] outParams = [];
@@ -27,7 +27,7 @@ namespace Client
                     outStream.writeString("Piotr");
                     outStream.endEncapsulation();
                     inParams = outStream.finished();
-                    if (calculator.ice_invoke("hello", Ice.OperationMode.Normal, inParams, out outParams))
+                    if (obj.ice_invoke("hello", Ice.OperationMode.Normal, inParams, out outParams))
                     {
                         Ice.InputStream inStream = new(communicator, outParams);
                         inStream.startEncapsulation();
@@ -41,7 +41,8 @@ namespace Client
                     }
                     outStream.reset();
                     outStream.startEncapsulation();
-                    outStream.writeIntSeq([1,2,3,4,5]);
+                    int[] data = [1,2,3,4,5,5,5,5];
+                    outStream.writeIntSeq(data);
                     outStream.endEncapsulation();
                     inParams = outStream.finished();
                     if (calculator.ice_invoke("mean", Ice.OperationMode.Normal, inParams, out outParams))
@@ -52,7 +53,7 @@ namespace Client
                         inStream.startEncapsulation();
                         double result = inStream.readDouble();
                         inStream.endEncapsulation();
-                        Console.WriteLine(result);
+                        Console.WriteLine("Mean result: " + result);
                     }
                     else
                     {
@@ -70,7 +71,7 @@ namespace Client
                         inStream.startEncapsulation();
                         double result = inStream.readInt();
                         inStream.endEncapsulation();
-                        Console.WriteLine(result);
+                        Console.WriteLine("Increment result: " + result);
                     }
                     else
                     {
