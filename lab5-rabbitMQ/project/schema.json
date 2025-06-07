@@ -1,0 +1,306 @@
+{
+  "exchanges": [
+    {
+      "name": "orders_exchange",
+      "type": "2",
+      "x": 299,
+      "y": 297,
+      "resource_type": "exchange",
+      "id": 1
+    }
+  ],
+  "queues": [
+    {
+      "name": "boots",
+      "x": 529,
+      "y": 129,
+      "resource_type": "queue",
+      "id": 2,
+      "messages": [],
+      "totalConsumers": 2,
+      "lastConsumer": 1
+    },
+    {
+      "name": "oxygen",
+      "x": 521,
+      "y": 297,
+      "resource_type": "queue",
+      "id": 3,
+      "messages": [],
+      "totalConsumers": 1,
+      "lastConsumer": 0
+    },
+    {
+      "name": "backpack",
+      "x": 533,
+      "y": 468,
+      "resource_type": "queue",
+      "id": 4,
+      "messages": [],
+      "totalConsumers": 1,
+      "lastConsumer": 0
+    },
+    {
+      "name": "adminQ",
+      "resource_type": "queue",
+      "id": 36,
+      "type": 0,
+      "x": 292,
+      "y": 534,
+      "messages": []
+    },
+    {
+      "name": "shop1Q",
+      "resource_type": "queue",
+      "id": 42,
+      "type": 0,
+      "x": 826,
+      "y": 132,
+      "messages": []
+    },
+    {
+      "name": "hiker1Q",
+      "resource_type": "queue",
+      "id": 46,
+      "type": 0,
+      "x": 323,
+      "y": 71,
+      "messages": []
+    }
+  ],
+  "bindings": [
+    {
+      "source": 1,
+      "vhost": "demo",
+      "destination": 3,
+      "destination_type": "queue",
+      "routing_key": "order.oxygen",
+      "arguments": [],
+      "resource_type": "binding",
+      "id": 5,
+      "source_type": "exchange"
+    },
+    {
+      "source": 1,
+      "vhost": "demo",
+      "destination": 4,
+      "destination_type": "queue",
+      "routing_key": "order.backpack",
+      "arguments": [],
+      "resource_type": "binding",
+      "id": 6,
+      "source_type": "exchange"
+    },
+    {
+      "source": 1,
+      "vhost": "demo",
+      "destination": 2,
+      "destination_type": "queue",
+      "routing_key": "order.boots",
+      "arguments": [],
+      "resource_type": "binding",
+      "id": 7,
+      "source_type": "exchange"
+    },
+    {
+      "source": 3,
+      "vhost": "default",
+      "source_type": "queue",
+      "destination": 11,
+      "destination_type": "consumer",
+      "id": 14,
+      "routing_key": null,
+      "arguments": []
+    },
+    {
+      "source": 4,
+      "vhost": "default",
+      "source_type": "queue",
+      "destination": 12,
+      "destination_type": "consumer",
+      "id": 15,
+      "routing_key": null,
+      "arguments": []
+    },
+    {
+      "source": 8,
+      "vhost": "default",
+      "source_type": "producer",
+      "destination": 1,
+      "destination_type": "exchange",
+      "id": 16,
+      "routing_key": "di.usr.one",
+      "arguments": []
+    },
+    {
+      "source": 9,
+      "vhost": "default",
+      "source_type": "producer",
+      "destination": 1,
+      "destination_type": "exchange",
+      "id": 17,
+      "routing_key": "di.usr.two",
+      "arguments": []
+    },
+    {
+      "source": 2,
+      "vhost": "demo",
+      "destination": 11,
+      "destination_type": "consumer",
+      "routing_key": "key",
+      "arguments": [],
+      "id": 34,
+      "source_type": "queue"
+    },
+    {
+      "source": 3,
+      "vhost": "demo",
+      "destination": 12,
+      "destination_type": "consumer",
+      "routing_key": "key",
+      "arguments": [],
+      "id": 35,
+      "source_type": "queue"
+    },
+    {
+      "source": 1,
+      "vhost": "demo",
+      "destination": 36,
+      "destination_type": "queue",
+      "routing_key": "#",
+      "arguments": [],
+      "id": 37,
+      "source_type": "exchange"
+    },
+    {
+      "source": 36,
+      "vhost": "demo",
+      "destination": 38,
+      "destination_type": "consumer",
+      "routing_key": "key",
+      "arguments": [],
+      "id": 40,
+      "source_type": "queue"
+    },
+    {
+      "source": 39,
+      "vhost": "demo",
+      "destination": 1,
+      "destination_type": "exchange",
+      "routing_key": "key",
+      "arguments": [],
+      "id": 41,
+      "source_type": "producer"
+    },
+    {
+      "source": 1,
+      "vhost": "demo",
+      "destination": 42,
+      "destination_type": "queue",
+      "routing_key": "admin.shop admin.all",
+      "arguments": [],
+      "id": 44,
+      "source_type": "exchange"
+    },
+    {
+      "source": 42,
+      "vhost": "demo",
+      "destination": 11,
+      "destination_type": "consumer",
+      "routing_key": "key",
+      "arguments": [],
+      "id": 45,
+      "source_type": "queue"
+    },
+    {
+      "source": 1,
+      "vhost": "demo",
+      "destination": 46,
+      "destination_type": "queue",
+      "routing_key": "admin.hiker admin.all",
+      "arguments": [],
+      "id": 47,
+      "source_type": "exchange"
+    },
+    {
+      "source": 46,
+      "vhost": "demo",
+      "destination": 48,
+      "destination_type": "consumer",
+      "routing_key": "key",
+      "arguments": [],
+      "id": 49,
+      "source_type": "queue"
+    }
+  ],
+  "producers": [
+    {
+      "name": "hiker1",
+      "x": 157,
+      "y": 152,
+      "interval": 5,
+      "publish": {
+        "to": 1,
+        "payload": "one",
+        "routing_key": "di.usr.one"
+      },
+      "resource_type": "producer",
+      "id": 8
+    },
+    {
+      "name": "hiker2",
+      "x": 151,
+      "y": 396,
+      "interval": 5,
+      "publish": {
+        "to": 1,
+        "payload": "two",
+        "routing_key": "di.usr.two"
+      },
+      "resource_type": "producer",
+      "id": 9
+    },
+    {
+      "name": "admin",
+      "resource_type": "producer",
+      "id": 39,
+      "type": 0,
+      "x": 243,
+      "y": 668
+    }
+  ],
+  "consumers": [
+    {
+      "name": "shop1",
+      "x": 810,
+      "y": 236,
+      "consume": 3,
+      "resource_type": "consumer",
+      "id": 11
+    },
+    {
+      "name": "shop2",
+      "x": 793,
+      "y": 420,
+      "consume": 4,
+      "resource_type": "consumer",
+      "id": 12
+    },
+    {
+      "name": "admin",
+      "resource_type": "consumer",
+      "id": 38,
+      "type": 0,
+      "x": 324,
+      "y": 669
+    },
+    {
+      "name": "hiker1",
+      "resource_type": "consumer",
+      "id": 48,
+      "type": 0,
+      "x": 157,
+      "y": 79
+    }
+  ]
+}
